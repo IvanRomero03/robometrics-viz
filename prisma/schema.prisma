@@ -1,20 +1,55 @@
-// This is your Prisma schema file,
-// learn more about it in the docs: https://pris.ly/d/prisma-schema
-
 generator client {
     provider = "prisma-client-js"
 }
 
 datasource db {
-    provider = "sqlite"
+    provider = "mongodb"
     url      = env("DATABASE_URL")
 }
 
-model Post {
-    id        Int      @id @default(autoincrement())
-    name      String
-    createdAt DateTime @default(now())
-    updatedAt DateTime @updatedAt
+model machines {
+    id                 String  @id @default(auto()) @map("_id") @db.ObjectId
+    cpu_percent        Float?
+    cpu_temp           Float?
+    created_at         Float
+    /// Could not determine type: the field only had null or empty values in the sample set.
+    gpu_fan_speed      Float?
+    gpu_memory_percent Float?
+    gpu_percent        Float?
+    gpu_power_usage    Int?
+    gpu_temp           Float?
+    machine_id         String?
+    memory_percent     Float?
+}
 
-    @@index([name])
+model processes {
+    id                 String  @id @default(auto()) @map("_id") @db.ObjectId
+    /// Could not determine type: the field only had null or empty values in the sample set.
+    ParentProcess      Int?
+    cpu_percent        Float?
+    create_time        Float?
+    created_at         Float?
+    gpu_memory         Int?
+    gpu_memory_percent Float?
+    machine_id         String
+    memory_percent     Float?
+    name               String
+    num_threads        Int?
+    pid                Int?
+    status             String?
+    threads            Int[]
+}
+
+model static_machines {
+    id                 String  @id @default(auto()) @map("_id") @db.ObjectId
+    cpu_count          Int?
+    cpu_freq           Float?
+    created_at         Float?
+    gpu_count          Int?
+    gpu_driver_version String?
+    gpu_memory         Float?
+    gpu_name           String?
+    machine_id         String
+    total_gpu_memory   Float?
+    total_memory       Float?
 }

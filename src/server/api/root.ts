@@ -1,5 +1,6 @@
 import { postRouter } from "rbrgs/server/api/routers/post";
 import { createCallerFactory, createTRPCRouter } from "rbrgs/server/api/trpc";
+import { metricsRouter } from "rbrgs/server/api/routers/metrics";
 
 /**
  * This is the primary router for your server.
@@ -8,6 +9,7 @@ import { createCallerFactory, createTRPCRouter } from "rbrgs/server/api/trpc";
  */
 export const appRouter = createTRPCRouter({
   post: postRouter,
+  metrics: metricsRouter,
 });
 
 // export type definition of API
