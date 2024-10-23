@@ -1,13 +1,12 @@
 "use client";
-import Link from "next/link";
 import { api } from "rbrgs/trpc/react";
-// import { useEffect } from "react";
-import { Vega } from "react-vega";
-import SingleTimeseries from "./_components/SingleTimeseries";
-import StackedTimeseries from "./_components/StackedTimeseries";
-import { useEffect, useState } from "react";
 import { Input } from "r/components/ui/input";
-import AddRoboGraphic from "./_components/AddRoboGraphic";
+import AddRoboGraphic, {
+  formSchema,
+} from "rbrgs/app/_components/AddRoboGraphic";
+import ContructGraph from "rbrgs/app/_components/ContructGraph";
+import { useEffect, useState } from "react";
+import { z } from "zod";
 
 export default function Home() {
   // 15 min ago
@@ -34,13 +33,22 @@ export default function Home() {
   useEffect(() => {
     const interval = setInterval(() => {
       if (!live) return;
-      void utils.invalidate();
-    }, 750);
+      console.log("refreshing");
+      void utils.metrics.customGraph.refetch();
+    }, 1000);
 
     return () => clearInterval(interval);
-  }, []);
+  }, [live, utils]);
 
   const [option, setOption] = useState("15 min");
+
+  const [customGraphs, setCustomGraphs] = useState<
+    z.infer<typeof formSchema>[]
+  >([]);
+
+  function addGraph(graph: z.infer<typeof formSchema>) {
+    setCustomGraphs([...customGraphs, graph]);
+  }
 
   return (
     <main className="flex min-h-screen flex-col items-center">
@@ -114,6 +122,7 @@ export default function Home() {
             onClick={() => {
               setLive(!live);
               setTo(null);
+              console.log("live", live);
             }}
             className={`${
               !live ? "bg-green-500" : "bg-red-500"
@@ -123,70 +132,18 @@ export default function Home() {
           </button>
         </div>
         <div className="grid w-[84vw] grid-cols-3 gap-12">
-          <SingleTimeseries
-            data={
-              machines.data?.map((stat) => ({
-                date: new Date(stat.created_at * 1000),
-                value: stat.cpu_percent ?? 0,
-              })) ?? []
-            }
-            labels={{
-              title: "CPU Usage",
-              x: "Time",
-              y: "CPU Usage (%)",
-            }}
+          {customGraphs.map((thisgraph, i) => (
+            <ContructGraph
+              key={i}
+              query={{ ...thisgraph.query, from, to: to ?? undefined }}
+              labels={thisgraph.labels}
+            />
+          ))}
+          <AddRoboGraphic
+            from={from}
+            to={to ?? undefined}
+            addCustomGraph={addGraph}
           />
-          <SingleTimeseries
-            data={
-              machines.data
-                ?.map((stat) => ({
-                  date: new Date(stat.created_at * 1000),
-                  value: stat.cpu_percent ?? 0,
-                }))
-                .slice(0, 10) ?? []
-            }
-            labels={{
-              x: "Date2",
-            }}
-          />
-          <SingleTimeseries
-            data={
-              machines.data
-                ?.map((stat) => ({
-                  date: new Date(stat.created_at * 1000),
-                  value: stat.cpu_percent ?? 0,
-                }))
-                .slice(0, 10) ?? []
-            }
-          />
-          <SingleTimeseries
-            data={
-              machines.data
-                ?.map((stat) => ({
-                  date: new Date(stat.created_at * 1000),
-                  value: stat.cpu_percent ?? 0,
-                }))
-                .slice(0, 10) ?? []
-            }
-          />
-          <StackedTimeseries
-            data={
-              (
-                processes.data?.filter((stat) => stat.cpu_percent !== null) ??
-                []
-              ).map((stat) => ({
-                date: new Date((stat.created_at ?? 0) * 1000),
-                value: stat.cpu_percent ?? 0,
-                id: stat.name + stat.machine_id + stat.pid,
-              })) ?? []
-            }
-            labels={{
-              title: "CPU Usage",
-              x: "Time",
-              y: "CPU Usage (%)",
-            }}
-          />
-          <AddRoboGraphic from={from} to={to ?? undefined} />
         </div>
       </div>
     </main>

@@ -2,7 +2,7 @@
 import { api } from "rbrgs/trpc/react";
 import SingleTimeseries from "./SingleTimeseries";
 import StackedTimeseries from "./StackedTimeseries";
-import { useCallback, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import { Skeleton } from "r/components/ui/skeleton";
 
 export default function ContructGraph({
@@ -41,9 +41,18 @@ export default function ContructGraph({
   const twoOrMore =
     query.process.customs.length > 1 ||
     query.machine.customs.length > 1 ||
+    (query.machine.customs.length == 1 && query.process.customs.length == 1) ||
     query.process.all;
 
   const { isLoading, data } = api.metrics.customGraph.useQuery(query);
+
+  console.log(data, "data");
+
+  const [refreshState, setRefreshState] = useState(false);
+
+  useEffect(() => {
+    setRefreshState(!refreshState);
+  }, [query]);
 
   if (isLoading) {
     return <Skeleton className="h-full w-full" />;
@@ -55,24 +64,36 @@ export default function ContructGraph({
 
   if (twoOrMore) {
     return (
-      <StackedTimeseries
-        data={data.map((stat) => ({
-          date: new Date(stat.date * 1000),
-          value: stat.value,
-          id: stat.id,
-        }))}
-        labels={labelsGraph}
-      />
+      <div className="col-span-2">
+        <StackedTimeseries
+          data={data.map((stat) => ({
+            date: new Date(stat.date * 1000),
+            value: stat.value,
+            id: stat.id,
+          }))}
+          labels={labelsGraph}
+        />
+        <p className="text-center text-sm text-gray-500">
+          Last fetch from {query.from.toLocaleString()} to{" "}
+          {query.to?.toLocaleString() ?? new Date().toLocaleString()}
+        </p>
+      </div>
     );
   } else {
     return (
-      <SingleTimeseries
-        data={data.map((stat) => ({
-          date: new Date(stat.date * 1000),
-          value: stat.value,
-        }))}
-        labels={labelsGraph}
-      />
+      <div>
+        <SingleTimeseries
+          data={data.map((stat) => ({
+            date: new Date(stat.date * 1000),
+            value: stat.value,
+          }))}
+          labels={labelsGraph}
+        />
+        <p className="text-center text-sm text-gray-500">
+          Last fetch from {query.from.toLocaleString()} to{" "}
+          {query.to?.toLocaleString() ?? new Date().toLocaleString()}
+        </p>
+      </div>
     );
   }
 }

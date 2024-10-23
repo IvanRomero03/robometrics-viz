@@ -49,30 +49,30 @@ export default function StackedTimeseries({
               scale: { nice: true },
             },
           },
-          signals: [
-            {
-              name: "tooltip",
-              value: {},
-              on: [
-                { events: "rect:mouseover", update: "datum" },
-                { events: "rect:mouseout", update: "{}" },
-              ],
-            },
-            {
-              name: "tooltipOut",
-              value: {},
-              on: [{ events: "rect:mouseout", update: "{}" }],
-            },
-          ],
+          // signals: [
+          //   {
+          //     name: "tooltip",
+          //     value: {},
+          //     on: [
+          //       { events: "rect:mouseover", update: "datum" },
+          //       { events: "rect:mouseout", update: "{}" },
+          //     ],
+          //   },
+          //   {
+          //     name: "tooltipOut",
+          //     value: {},
+          //     on: [{ events: "rect:mouseout", update: "{}" }],
+          //   },
+          // ],
         }}
-        signalListeners={{
-          tooltip: (name, value) => {
-            console.log("tooltip", value);
-          },
-          tooltipOut: (name, value) => {
-            console.log("tooltipOut", value);
-          },
-        }}
+        // signalListeners={{
+        //   tooltip: (name, value) => {
+        //     console.log("tooltip", value);
+        //   },
+        //   tooltipOut: (name, value) => {
+        //     console.log("tooltipOut", value);
+        //   },
+        // }}
       />
     </div>
   );

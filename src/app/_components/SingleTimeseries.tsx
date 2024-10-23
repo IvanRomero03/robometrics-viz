@@ -45,16 +45,16 @@ export default function SingleTimeseries({
             color: { value: "steelblue" },
           },
           title: labels?.title,
-          signals: [
-            {
-              name: "tooltip",
-              value: {},
-              on: [
-                { events: "rect:mouseover", update: "datum" },
-                { events: "rect:mouseout", update: "{}" },
-              ],
-            },
-          ],
+          // signals: [
+          //   {
+          //     name: "tooltip",
+          //     value: {},
+          //     on: [
+          //       { events: "rect:mouseover", update: "datum" },
+          //       { events: "rect:mouseout", update: "{}" },
+          //     ],
+          //   },
+          // ],
         }}
       />
     </div>

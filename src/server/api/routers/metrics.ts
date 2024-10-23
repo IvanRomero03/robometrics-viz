@@ -123,9 +123,9 @@ export const metricsRouter = createTRPCRouter({
           where: {
             created_at: {
               gte: input.from.getTime() / 1000,
-              ...{
-                ...(input.to && { lte: input.to.getTime() / 1000 }),
-              },
+              lte: input.to
+                ? input.to.getTime() / 1000
+                : new Date().getTime() / 1000,
             },
             OR: processes.map((process) => ({
               name: process.name,
@@ -164,7 +164,7 @@ export const metricsRouter = createTRPCRouter({
                 ...(input.to && { lte: input.to.getTime() / 1000 }),
               },
             },
-            AND: machines.map((machine) => ({
+            OR: machines.map((machine) => ({
               machine_id: machine.machine_id,
             })),
           },

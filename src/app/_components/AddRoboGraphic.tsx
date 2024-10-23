@@ -33,7 +33,7 @@ import { Checkbox } from "rbrgs/components/ui/checkbox";
 import { Label } from "r/components/ui/label";
 import { api } from "rbrgs/trpc/react";
 
-const formSchema = z.object({
+export const formSchema = z.object({
   labels: z.object({
     title: z.string().optional(),
     x: z.string().optional(),
@@ -66,17 +66,22 @@ const formSchema = z.object({
       name: z.string(),
       pid: z.number(),
     }),
+    __new_machine: z.object({
+      machine_id: z.string(),
+    }),
   }),
 });
 
 export default function AddRoboGraphic({
   from,
   to,
+  addCustomGraph,
 }: {
   from: Date;
   to?: Date;
+  addCustomGraph: (graph: z.infer<typeof formSchema>) => void;
 }) {
-  const [open, setOpen] = useState(true);
+  const [open, setOpen] = useState(false);
 
   const { data: machinesProcesses } =
     api.metrics.getProcessesGroupedByMachineIdAndPIDName.useQuery();
@@ -98,7 +103,8 @@ export default function AddRoboGraphic({
   });
 
   function onSubmit(data: z.infer<typeof formSchema>) {
-    console.log(data);
+    console.log(data, "data");
+    addCustomGraph(data);
   }
 
   return (
@@ -113,7 +119,7 @@ export default function AddRoboGraphic({
           <p className="text-xl font-semibold">Add RoboGraphic2</p>
         </div>
       </DialogTrigger>
-      <DialogContent className="sm:max-w-[425px] md:max-w-[600px] lg:max-w-[1000px]">
+      <DialogContent className="max-h-screen overflow-y-scroll sm:max-w-[425px] md:max-w-[600px] lg:max-w-[1200px]">
         <>
           <DialogHeader>
             <DialogTitle>Add RoboGraphic</DialogTitle>
@@ -121,8 +127,8 @@ export default function AddRoboGraphic({
 
           <div className="w-11/12">
             <ContructGraph
-              query={{ ...form.getValues().query, from, to }}
-              labels={form.getValues().labels}
+              query={{ ...form.watch("query"), from, to }}
+              labels={form.watch("labels")}
             />
           </div>
 
@@ -359,7 +365,91 @@ export default function AddRoboGraphic({
                   )}
                 />
 
-                <Button type="submit">Submit</Button>
+                <FormField
+                  control={form.control}
+                  name="query.__new_machine"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormControl>
+                        <div>
+                          <h5 className="text-lg font-semibold">
+                            Add machine record query
+                          </h5>
+                          <div className="flex items-center gap-4">
+                            <div className="w-1/2">
+                              <Label htmlFor="machine_id-select">Machine</Label>
+                              <Select
+                                value={field.value?.machine_id ?? ""}
+                                onValueChange={(val) =>
+                                  field.onChange({
+                                    ...field.value,
+                                    machine_id: val,
+                                  })
+                                }
+                              >
+                                <SelectTrigger>
+                                  {field.value?.machine_id ?? "Select machine"}
+                                </SelectTrigger>
+                                <SelectContent>
+                                  {machinesProcesses?.map((machine) => (
+                                    <SelectItem
+                                      key={machine.machine_id}
+                                      value={machine.machine_id}
+                                    >
+                                      {machine.machine_id}
+                                    </SelectItem>
+                                  ))}
+                                </SelectContent>
+                              </Select>
+                            </div>
+                            <Button
+                              onClick={() => {
+                                form.setValue("query.machine.customs", [
+                                  ...form.getValues().query.machine.customs,
+                                  field.value,
+                                ]);
+                                field.onChange(null);
+                              }}
+                              className="self-end"
+                            >
+                              Add
+                            </Button>
+                          </div>
+                        </div>
+                      </FormControl>
+                    </FormItem>
+                  )}
+                />
+
+                {form.watch("query.machine.customs").map((machine, i) => (
+                  <div key={i} className="flex items-center gap-4">
+                    <p>{machine.machine_id}</p>
+                    <Button
+                      onClick={() => {
+                        form.setValue(
+                          "query.machine.customs",
+                          form
+                            .getValues()
+                            .query.machine.customs.filter(
+                              (_, idx) => idx !== i,
+                            ),
+                        );
+                      }}
+                    >
+                      Remove
+                    </Button>
+                  </div>
+                ))}
+
+                <Button
+                  type="submit"
+                  onClick={() => {
+                    onSubmit(form.getValues());
+                    form.reset();
+                  }}
+                >
+                  Submit
+                </Button>
               </>
             </form>
           </Form>
