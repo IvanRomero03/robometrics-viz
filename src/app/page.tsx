@@ -15,14 +15,6 @@ export default function Home() {
   );
   const [to, setTo] = useState<Date | null>(new Date());
   // const statics = api.metrics.getStatics.useQuery();
-  const machines = api.metrics.getAllMachineStats.useQuery({
-    from,
-    to: to ?? undefined,
-  });
-  const processes = api.metrics.getAllProcessStats.useQuery({
-    from,
-    to: to ?? undefined,
-  });
   const utils = api.useUtils();
 
   // each 0.5 seconds refresh the data
@@ -49,6 +41,21 @@ export default function Home() {
   function addGraph(graph: z.infer<typeof formSchema>) {
     setCustomGraphs([...customGraphs, graph]);
   }
+
+  useEffect(() => {
+    const localCustomGraphs = window.localStorage.getItem("customGraphs");
+    if (localCustomGraphs) {
+      setCustomGraphs(
+        JSON.parse(localCustomGraphs) as z.infer<typeof formSchema>[],
+      );
+    }
+  }, []);
+
+  useEffect(() => {
+    if (customGraphs.length === 0) return;
+    console.log("customGraphs", customGraphs);
+    window.localStorage.setItem("customGraphs", JSON.stringify(customGraphs));
+  }, [customGraphs]);
 
   return (
     <main className="flex min-h-screen flex-col items-center">
